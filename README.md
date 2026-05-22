@@ -5,7 +5,6 @@ A static student course registration app built with React. The app now stores re
 ## Features
 
 - Responsive React interface with text fields, dropdowns, checkboxes, radio buttons, and submit handling
-- Responsive React interface with text fields, dropdowns, checkboxes, radio buttons, and submit handling
 - Browser storage for saved registrations using `localStorage`
 - Duplicate registration and seat-capacity validation
 - Ready to publish directly to GitHub Pages
@@ -36,12 +35,16 @@ npm --prefix client run build
 ## Publish On GitHub Pages
 
 1. Push the repository to GitHub.
-2. Open the `client` folder in a terminal.
-3. Install dependencies with `npm install`.
-4. Deploy the app with `npm run deploy`.
-5. In GitHub, open repository Settings > Pages.
-6. Set the source to the `gh-pages` branch and save.
-7. Wait for GitHub Pages to build the site.
-8. Open the live URL shown in the Pages settings.
+2. Push to the `main` branch.
+3. Make sure the GitHub Pages source is set to the `gh-pages` branch in repository Settings > Pages.
+4. Wait for the GitHub Action to build and publish the site.
+5. Open the live URL shown in the Pages settings.
+
+If you want to trigger deployment manually from your computer, run these commands inside the `client` folder:
+
+```bash
+npm install
+npm run deploy
+```
 
 The final link will look like `https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/`.
