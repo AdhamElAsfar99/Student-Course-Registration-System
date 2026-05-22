@@ -1,18 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-
-const defaultForm = {
-  studentName: '',
-  studentId: '',
-  email: '',
-  program: '',
-  year: 'Year 1',
-  courseId: '',
-  attendanceMode: 'On campus',
-  interests: [],
-  notes: ''
-};
-
-const interestOptions = ['Labs', 'Projects', 'Internships', 'Research', 'Exams'];
+import {
+  courses as courseCatalog,
+  defaultForm,
+  getInitialRegistrations,
+  interestOptions,
+  saveRegistrations
+} from './data';
 
 function formatDate(value) {
   return new Date(value).toLocaleString('en-GB', {
@@ -22,7 +15,7 @@ function formatDate(value) {
 }
 
 export default function App() {
-  const [courses, setCourses] = useState([]);
+  const [courses] = useState(courseCatalog);
   const [registrations, setRegistrations] = useState([]);
   const [formData, setFormData] = useState(defaultForm);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,30 +24,13 @@ export default function App() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [courseResponse, registrationResponse] = await Promise.all([
-          fetch('/api/courses'),
-          fetch('/api/registrations')
-        ]);
-
-        const courseData = await courseResponse.json();
-        const registrationData = await registrationResponse.json();
-
-        setCourses(courseData);
-        setRegistrations(registrationData);
-        setFormData((current) => ({
-          ...current,
-          courseId: courseData[0]?.id ?? ''
-        }));
-      } catch {
-        setStatus({ type: 'error', message: 'Unable to load registration data.' });
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
+    const storedRegistrations = getInitialRegistrations();
+    setRegistrations(storedRegistrations);
+    setFormData((current) => ({
+      ...current,
+      courseId: courseCatalog[0]?.id ?? ''
+    }));
+    setLoading(false);
   }, []);
 
   const selectedCourse = useMemo(
@@ -123,22 +99,45 @@ export default function App() {
     setStatus({ type: 'idle', message: '' });
 
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const selected = courses.find((course) => course.id === formData.courseId);
+      if (!selected) throw new Error('Selected course does not exist.');
 
-      const payload = await response.json();
+      const duplicate = registrations.find(
+        (registration) =>
+          registration.studentId.toLowerCase() === formData.studentId.trim().toLowerCase() &&
+          registration.courseId === formData.courseId
+      );
 
-      if (!response.ok) {
-        throw new Error(payload.message || 'Registration failed.');
+      if (duplicate) {
+        throw new Error('This student is already registered for the selected course.');
       }
 
-      setRegistrations((current) => [payload.registration, ...current]);
-      setStatus({ type: 'success', message: payload.message });
+      const currentCount = registrations.filter((registration) => registration.courseId === formData.courseId).length;
+      if (currentCount >= selected.capacity) {
+        throw new Error('That course is already full. Choose another course.');
+      }
+
+      const registration = {
+        id: crypto.randomUUID(),
+        studentName: formData.studentName.trim(),
+        studentId: formData.studentId.trim(),
+        email: formData.email.trim(),
+        program: formData.program.trim(),
+        year: formData.year,
+        courseId: formData.courseId,
+        courseTitle: selected.title,
+        attendanceMode: formData.attendanceMode,
+        interests: formData.interests,
+        notes: formData.notes.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      setRegistrations((current) => {
+        const next = [registration, ...current];
+        saveRegistrations(next);
+        return next;
+      });
+      setStatus({ type: 'success', message: 'Registration saved in your browser.' });
       setFormData((current) => ({
         ...defaultForm,
         courseId: current.courseId || courses[0]?.id || ''
@@ -158,7 +157,7 @@ export default function App() {
             <p className="eyebrow">University Registration Portal</p>
             <h1>Student Course Registration System</h1>
             <p className="hero-text">
-              Register students for courses with a clean, responsive interface and a simple Node.js backend that stores every submission in JSON files.
+              Register students for courses with a clean, responsive interface and browser-based storage that works on GitHub Pages.
             </p>
             <div className="hero-stats">
               <div className="stat-card">
