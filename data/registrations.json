@@ -1,0 +1,16 @@
+[
+  {
+    "id": "9423cb0d-2556-454c-8f09-6e9212b85872",
+    "studentName": "Adham ElAsfar",
+    "studentId": "900213258",
+    "email": "adham@example.com",
+    "program": "Computer Science",
+    "year": "Year 4",
+    "courseId": "web-101",
+    "courseTitle": "Web Development Fundamentals",
+    "attendanceMode": "On campus",
+    "interests": [],
+    "notes": "",
+    "createdAt": "2026-05-22T12:09:20.144Z"
+  }
+]
