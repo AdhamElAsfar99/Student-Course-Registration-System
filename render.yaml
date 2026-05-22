@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: student-course-registration-system
+    env: node
+    plan: free
+    buildCommand: npm install && npm --prefix client install && npm run build
+    startCommand: npm start
+    autoDeploy: true
